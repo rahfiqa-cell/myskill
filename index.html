@@ -1,1 +1,224 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aplikasi pembuat CV online sederhana. Buat, pratinjau, dan cetak CV profesional langsung dari browser.">
+  <title>CVKu — Pembuat CV Online</title>
+  <style>
+    :root {
+      --bg: #f3f6fb; --panel: #ffffff; --ink: #182230; --muted: #64748b;
+      --primary: #2563eb; --primary-dark: #1d4ed8; --line: #dce4ef;
+      --accent: #eaf1ff; --shadow: 0 12px 35px rgba(20, 40, 80, .08);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    header { background: linear-gradient(120deg, #132d59, #2563eb); color: white; padding: 25px 5vw 28px; }
+    .header-inner { max-width: 1440px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .brand { display: flex; gap: 12px; align-items: center; }
+    .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: rgba(255,255,255,.17); font-size: 23px; font-weight: 800; }
+    h1 { font-size: clamp(1.35rem, 3vw, 2rem); margin: 0; letter-spacing: -.04em; }
+    header p { margin: 5px 0 0; color: #dbeafe; font-size: .92rem; }
+    .header-tag { border: 1px solid rgba(255,255,255,.35); padding: 8px 12px; border-radius: 99px; font-size: .8rem; white-space: nowrap; }
+    main { max-width: 1440px; margin: 25px auto; padding: 0 22px 38px; }
+    .toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .toolbar h2 { margin: 0; font-size: 1.2rem; }
+    .toolbar p { margin: 4px 0 0; color: var(--muted); font-size: .88rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    button { border: 0; border-radius: 10px; padding: 11px 15px; font: inherit; font-weight: 700; cursor: pointer; transition: .18s ease; }
+    button:hover { transform: translateY(-1px); }
+    .btn-primary { color: white; background: var(--primary); box-shadow: 0 5px 14px #2563eb30; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-light { color: #26364c; background: white; border: 1px solid var(--line); }
+    .workspace { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(420px, 1.1fr); gap: 22px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid #e5eaf2; border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+    .panel-head { padding: 18px 21px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .panel-head h3 { margin: 0; font-size: 1rem; }
+    .step { color: var(--primary); background: var(--accent); border-radius: 8px; padding: 5px 8px; font-size: .75rem; font-weight: 800; }
+    form { padding: 20px; }
+    fieldset { border: 0; margin: 0; padding: 0 0 21px; }
+    fieldset + fieldset { border-top: 1px solid var(--line); padding-top: 20px; }
+    legend { padding: 0; margin-bottom: 14px; font-weight: 800; font-size: .92rem; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    label { color: #39485d; font-size: .8rem; font-weight: 700; }
+    input, textarea, select { width: 100%; padding: 11px 12px; border: 1px solid #d7dfeb; border-radius: 9px; background: #fff; color: var(--ink); font: inherit; font-size: .9rem; outline: none; }
+    input:focus, textarea:focus, select:focus { border-color: #6d9af8; box-shadow: 0 0 0 3px #2563eb17; }
+    textarea { min-height: 88px; resize: vertical; line-height: 1.5; }
+    .hint { color: var(--muted); font-size: .75rem; margin-top: 5px; }
+    .preview-wrap { padding: 20px; background: #e9eef6; }
+    .preview-note { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #56667c; font-size: .78rem; margin: 0 2px 13px; }
+    .cv-paper { background: white; min-height: 780px; padding: 42px 43px; box-shadow: 0 4px 20px #172b4d14; color: #243247; }
+    .cv-top { border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 22px; }
+    .cv-name { color: #16356b; font-size: 2rem; line-height: 1.1; letter-spacing: -.04em; margin: 0 0 7px; overflow-wrap: anywhere; }
+    .cv-role { color: #2563eb; font-size: 1rem; font-weight: 700; margin: 0 0 12px; }
+    .cv-contact { display: flex; flex-wrap: wrap; gap: 6px 15px; font-size: .75rem; color: #5e6d80; overflow-wrap: anywhere; }
+    .cv-section { margin: 0 0 21px; }
+    .cv-section h4 { color: #16356b; font-size: .82rem; text-transform: uppercase; letter-spacing: .12em; border-bottom: 1px solid #dce5f2; padding-bottom: 7px; margin: 0 0 10px; }
+    .cv-section p { font-size: .82rem; line-height: 1.65; margin: 0; white-space: pre-line; overflow-wrap: anywhere; }
+    .cv-entry { margin-bottom: 13px; }
+    .cv-entry:last-child { margin-bottom: 0; }
+    .entry-heading { display: flex; justify-content: space-between; gap: 12px; font-size: .85rem; font-weight: 800; margin-bottom: 3px; }
+    .entry-date { color: #64748b; font-size: .73rem; font-weight: 600; white-space: nowrap; }
+    .entry-sub { color: #2563eb; font-size: .77rem; font-weight: 700; margin-bottom: 5px; }
+    .skills { display: flex; flex-wrap: wrap; gap: 7px; }
+    .skill { padding: 6px 9px; background: #edf3ff; color: #234a91; border-radius: 6px; font-size: .75rem; font-weight: 700; }
+    .footer { text-align: center; color: #7a8798; font-size: .78rem; padding: 22px 0 0; }
+    .notice { display: none; padding: 11px 13px; border-radius: 10px; background: #ecfdf5; color: #166534; font-size: .85rem; margin-bottom: 15px; }
+    @media (max-width: 960px) { .workspace { grid-template-columns: 1fr; } .cv-paper { min-height: 0; } }
+    @media (max-width: 560px) {
+      header { padding: 20px 18px; } .header-inner { align-items: flex-start; } .header-tag { display: none; }
+      main { padding: 0 12px 25px; margin-top: 17px; } .field-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; } .panel-head { padding: 15px; } form { padding: 15px; }
+      .preview-wrap { padding: 10px; } .cv-paper { padding: 25px 22px; } .cv-name { font-size: 1.65rem; }
+      .entry-heading { flex-direction: column; gap: 2px; } .entry-date { white-space: normal; }
+      .actions { width: 100%; } .actions button { flex: 1; }
+    }
+    @media print {
+      body { background: white; } header, .toolbar, .form-panel, .preview-note, .footer { display: none !important; }
+      main { margin: 0; padding: 0; max-width: none; } .workspace { display: block; }
+      .preview-panel { border: 0; box-shadow: none; } .preview-wrap { padding: 0; background: white; }
+      .cv-paper { box-shadow: none; min-height: 0; padding: 12mm 14mm; } @page { size: A4; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-mark">CV</div>
+        <div><h1>CVKu</h1><p>Buat CV profesional, langsung dari browser.</p></div>
+      </div>
+      <div class="header-tag">Gratis · Praktis · Responsif</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="toolbar">
+      <div><h2>Pembuat CV Online</h2><p>Isi data di sebelah kiri dan lihat hasilnya secara langsung.</p></div>
+      <div class="actions">
+        <button class="btn-light" type="button" id="resetBtn">↺ Reset</button>
+        <button class="btn-primary" type="button" id="printBtn">↓ Cetak / Simpan PDF</button>
+      </div>
+    </div>
+    <div class="notice" id="notice" role="status">Data contoh berhasil dimuat.</div>
+    <div class="workspace">
+      <section class="panel form-panel">
+        <div class="panel-head"><h3>Data CV Anda</h3><span class="step">LANGKAH 1</span></div>
+        <form id="cvForm">
+          <fieldset>
+            <legend>Informasi pribadi</legend>
+            <div class="field-grid">
+              <div class="field full"><label for="name">Nama lengkap</label><input id="name" value="Nama Lengkap Anda" placeholder="Contoh: Nadia Putri" /></div>
+              <div class="field full"><label for="role">Posisi / profesi</label><input id="role" value="Web Developer" placeholder="Contoh: Graphic Designer" /></div>
+              <div class="field"><label for="email">Email</label><input id="email" type="email" value="nama@email.com" placeholder="nama@email.com" /></div>
+              <div class="field"><label for="phone">Nomor telepon</label><input id="phone" value="+62 812-3456-7890" placeholder="+62 ..." /></div>
+              <div class="field full"><label for="location">Kota / domisili</label><input id="location" value="Bukittinggi, Indonesia" placeholder="Kota, Indonesia" /></div>
+              <div class="field full"><label for="linkedin">LinkedIn / portofolio (opsional)</label><input id="linkedin" value="linkedin.com/in/profil-anda" placeholder="linkedin.com/in/..." /></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Profil singkat</legend>
+            <div class="field"><label for="summary">Tentang diri Anda</label><textarea id="summary" placeholder="Ceritakan pengalaman, keahlian, dan tujuan karier Anda.">Profesional yang antusias, memiliki kemampuan problem solving dan senang mempelajari teknologi baru. Terbiasa bekerja sama dalam tim dan berfokus pada hasil yang berkualitas.</textarea></div>
+          </fieldset>
+          <fieldset>
+            <legend>Pengalaman kerja</legend>
+            <div class="field-grid">
+              <div class="field"><label for="jobTitle">Jabatan</label><input id="jobTitle" value="Web Developer Junior" placeholder="Jabatan pekerjaan" /></div>
+              <div class="field"><label for="company">Perusahaan</label><input id="company" value="PT Contoh Digital" placeholder="Nama perusahaan" /></div>
+              <div class="field full"><label for="jobDate">Periode</label><input id="jobDate" value="Jan 2024 – Sekarang" placeholder="Jan 2024 – Des 2025" /></div>
+              <div class="field full"><label for="jobDesc">Tanggung jawab / pencapaian</label><textarea id="jobDesc">Mengembangkan dan memelihara halaman web responsif.
+Berkolaborasi dengan tim untuk meningkatkan pengalaman pengguna.
+Memperbaiki bug dan mengoptimalkan performa website.</textarea></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Pendidikan</legend>
+            <div class="field-grid">
+              <div class="field full"><label for="education">Institusi / jurusan</label><input id="education" value="Universitas Contoh — Teknik Informatika" placeholder="Sekolah / universitas — jurusan" /></div>
+              <div class="field full"><label for="eduDate">Periode</label><input id="eduDate" value="2020 – 2024" placeholder="2020 – 2024" /></div>
+              <div class="field full"><label for="eduDesc">Keterangan (opsional)</label><textarea id="eduDesc" placeholder="Contoh: IPK, organisasi, atau prestasi">Fokus pada pengembangan web dan rekayasa perangkat lunak.</textarea></div>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Keahlian</legend>
+            <div class="field"><label for="skills">Daftar keahlian</label><textarea id="skills" placeholder="Pisahkan dengan koma, contoh: HTML, CSS, JavaScript">HTML, CSS, JavaScript, Responsive Design, Git, Komunikasi</textarea><div class="hint">Pisahkan setiap keahlian menggunakan tanda koma.</div></div>
+          </fieldset>
+          <fieldset>
+            <legend>Proyek / informasi tambahan</legend>
+            <div class="field"><label for="projects">Proyek, sertifikat, atau prestasi (opsional)</label><textarea id="projects" placeholder="Nama proyek — ringkasan singkat">Website Portofolio — Membuat website pribadi responsif untuk menampilkan proyek dan pengalaman.</textarea></div>
+          </fieldset>
+        </form>
+      </section>
+
+      <section class="panel preview-panel">
+        <div class="panel-head"><h3>Pratinjau CV</h3><span class="step">LANGKAH 2</span></div>
+        <div class="preview-wrap">
+          <div class="preview-note"><span>Pratinjau akan berubah otomatis saat Anda mengetik.</span><span>A4</span></div>
+          <article class="cv-paper" id="cvPreview">
+            <div class="cv-top">
+              <h2 class="cv-name" id="pName"></h2><p class="cv-role" id="pRole"></p>
+              <div class="cv-contact" id="pContact"></div>
+            </div>
+            <section class="cv-section"><h4>Profil</h4><p id="pSummary"></p></section>
+            <section class="cv-section"><h4>Pengalaman Kerja</h4><div id="pExperience"></div></section>
+            <section class="cv-section"><h4>Pendidikan</h4><div id="pEducation"></div></section>
+            <section class="cv-section"><h4>Keahlian</h4><div class="skills" id="pSkills"></div></section>
+            <section class="cv-section" id="projectsSection"><h4>Proyek & Informasi Tambahan</h4><p id="pProjects"></p></section>
+          </article>
+        </div>
+      </section>
+    </div>
+    <div class="footer">CVKu · Data Anda diproses di browser ini dan tidak dikirim ke server.</div>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const val = id => $(id).value.trim();
+    const setText = (id, text) => { $(id).textContent = text || ''; };
+    function renderCV() {
+      setText('pName', val('name') || 'Nama Anda');
+      setText('pRole', val('role') || 'Posisi yang dituju');
+      const contacts = ['email', 'phone', 'location', 'linkedin'].map(val).filter(Boolean);
+      $('pContact').replaceChildren(...contacts.map(text => {
+        const span = document.createElement('span'); span.textContent = text; return span;
+      }));
+      setText('pSummary', val('summary') || 'Tambahkan profil singkat Anda.');
+      const exp = $('pExperience'); exp.replaceChildren();
+      if (val('jobTitle') || val('company') || val('jobDesc')) {
+        const entry = document.createElement('div'); entry.className = 'cv-entry';
+        const heading = document.createElement('div'); heading.className = 'entry-heading';
+        const title = document.createElement('span'); title.textContent = [val('jobTitle'), val('company')].filter(Boolean).join(' — ');
+        const date = document.createElement('span'); date.className = 'entry-date'; date.textContent = val('jobDate');
+        heading.append(title, date); entry.append(heading);
+        if (val('jobDesc')) { const p = document.createElement('p'); p.textContent = val('jobDesc'); entry.append(p); }
+        exp.append(entry);
+      } else { exp.textContent = 'Belum ada pengalaman kerja yang ditambahkan.'; }
+      const edu = $('pEducation'); edu.replaceChildren();
+      if (val('education') || val('eduDesc')) {
+        const entry = document.createElement('div'); entry.className = 'cv-entry';
+        const heading = document.createElement('div'); heading.className = 'entry-heading';
+        const title = document.createElement('span'); title.textContent = val('education');
+        const date = document.createElement('span'); date.className = 'entry-date'; date.textContent = val('eduDate');
+        heading.append(title, date); entry.append(heading);
+        if (val('eduDesc')) { const p = document.createElement('p'); p.textContent = val('eduDesc'); entry.append(p); }
+        edu.append(entry);
+      } else { edu.textContent = 'Belum ada pendidikan yang ditambahkan.'; }
+      const skills = val('skills').split(',').map(s => s.trim()).filter(Boolean);
+      $('pSkills').replaceChildren(...skills.map(skill => { const span = document.createElement('span'); span.className = 'skill'; span.textContent = skill; return span; }));
+      setText('pProjects', val('projects'));
+      $('projectsSection').style.display = val('projects') ? '' : 'none';
+    }
+    $('cvForm').addEventListener('input', renderCV);
+    $('printBtn').addEventListener('click', () => window.print());
+    $('resetBtn').addEventListener('click', () => {
+      if (!confirm('Kembalikan semua kolom ke data contoh?')) return;
+      $('cvForm').reset(); renderCV();
+      $('notice').style.display = 'block';
+      setTimeout(() => $('notice').style.display = 'none', 2600);
+    });
+    renderCV();
+  </script>
+</body>
+</html>
 
